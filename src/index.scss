@@ -1,0 +1,116 @@
+@import "scss/globals";
+
+body {
+    position: relative;
+}
+
+$panel-height: 100px;
+.name-info-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 300px;
+    height: $panel-height;
+
+    .box-clone {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .box-left,
+    .box-right {
+        position: absolute;
+        top: 0;
+        width: 150px;
+        height: $panel-height;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: -1;
+        animation: panelbgcadd 1s;
+    }
+
+    .box-left {
+        right: 150px;
+
+        &::before {
+            content: '';
+            background:url("/images/test/left_side.png") no-repeat;
+            background-size: 3px $panel-height;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: $panel-height;
+        }
+    }
+
+    .box-right {
+        left: 150px;
+        
+        &::before {
+            content: '';
+            background:url("/images/test/right_side.png") no-repeat;
+            background-size: 3px $panel-height;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 3px;
+            height: $panel-height;
+        }
+    }
+
+    .box-title {
+        float: left;
+        height: 30px;
+        margin: 50px 0 0 30px;
+        font-size: 20px;
+        line-height: 30px;
+        opacity: 1;
+        color: rgba(255, 255, 255, 1);
+        animation: panelfonts 2s;
+    }
+
+    .box-num {
+        float: right;
+        height: $panel-height;
+        font-size: 60px;
+        line-height: $panel-height;
+        margin-right: 30px;
+        opacity: 1;
+        color: rgba(255, 255, 255, 1);
+        animation: panelfonts 2s;
+    }
+}
+
+@keyframes panelfonts {
+    0% {
+        opacity: 0;
+    }
+
+    49% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    75% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes panelbgcadd {
+    0% {
+        width: 0;
+    }
+
+    100% {
+        width: 150px;
+    }
+}
