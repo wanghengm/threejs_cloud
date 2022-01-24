@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>three.js webgl - layers</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+        <link type="text/css" rel="stylesheet" href="main.css" />
+        <style>
+            body {
+                background-color: #f0f0f0;
+                color: #444;
+            }
+            a {
+                color: #08f;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="info">1</div>
+
+        <script type="module">
+            import * as THREE from '/build/three.module.js';
+            import { CinematicCamera } from './js/jsm/cameras/CinematicCamera.js';
+            import Stats from '/js/jsm/libs/stats.module.js';
+            import { GUI } from '/js/jsm/libs/dat.gui.module.js';
+            import { OrbitControls } from '/js/jsm/controls/OrbitControls.js';
+            import { OBJLoader } from '/js/jsm/loaders/OBJLoader.js';
+            import { EffectComposer } from '/js/jsm/postprocessing/EffectComposer.js';
+            import { RenderPass } from '/js/jsm/postprocessing/RenderPass.js';
+            import { ShaderPass } from '/js/jsm/postprocessing/ShaderPass.js';
+            import { OutlinePass } from '/js/jsm/postprocessing/OutlinePass.js';
+            import { FXAAShader } from '/js/jsm/shaders/FXAAShader.js';
+            import { UnrealBloomPass } from '/js/jsm/postprocessing/UnrealBloomPass.js';
+        </script>
+    </body>
+</html>
