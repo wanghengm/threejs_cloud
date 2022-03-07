@@ -24,62 +24,161 @@
             import { GUI } from '/js/jsm/libs/dat.gui.module.js';
             import { OrbitControls } from './js/jsm/controls/OrbitControls.js';
             import { TransformControls } from './js/jsm/controls/TransformControls.js';
-
-            let junying = document.getElementById('junying');
-            import { GLTFLoader } from './js/jsm/loaders/GLTFLoader.js';
-            import { RGBELoader } from './js/jsm/loaders/RGBELoader.js';
+            import { HDRCubeTextureLoader } from '/js/jsm/loaders/HDRCubeTextureLoader.js';
+            import { OBJLoader } from '/js/jsm/loaders/OBJLoader.js';
+            import { MTLLoader } from '/js/jsm/loaders/MTLLoader.js';
+            import { RGBELoader } from '/js/jsm/loaders/RGBELoader.js';
+            let container, stats;
 
             let camera, scene, renderer;
 
+            let pointLight;
+
             init();
-            render();
+            animate();
 
             function init() {
-                const container = document.createElement('div');
+                container = document.createElement('div');
                 document.body.appendChild(container);
 
-                camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
-                camera.position.set(-1.8, 0.6, 2.7);
+                camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
+                camera.position.z = 2000;
+
+                //cubemap
+                const path = 'images/BlueSky/';
+                const format = '.jpg';
+                const urls = [
+                    path + 'posx' + format,
+                    path + 'negx' + format,
+                    path + 'posy' + format,
+                    path + 'negy' + format,
+                    path + 'posz' + format,
+                    path + 'negz' + format,
+                ];
+
+                const reflectionCube = new THREE.CubeTextureLoader().load(urls);
+                const refractionCube = new THREE.CubeTextureLoader().load(urls);
+                refractionCube.mapping = THREE.CubeRefractionMapping;
 
                 scene = new THREE.Scene();
+                scene.background = reflectionCube;
 
-                // const loader = new GLTFLoader().setPath('../model/');
-                // loader.load('man2.gltf', function (gltf) {
-                //     scene.add(gltf.scene);
-                //     render();
-                // });
-                new RGBELoader().setPath('../model/').load('pedestrian_overpass_2k.hdr', function (texture) {
-                    texture.mapping = THREE.EquirectangularReflectionMapping;
+                //lights
+                const ambient = new THREE.AmbientLight(0xffffff);
+                scene.add(ambient);
 
-                    scene.background = texture;
-                    scene.environment = texture;
+                pointLight = new THREE.PointLight(0xffffff, 2);
+                scene.add(pointLight);
 
-                    render();
-
-                    // model
-
-                    const loader = new GLTFLoader().setPath('../model/');
-                    loader.load('man2.gltf', function (gltf) {
-                        scene.add(gltf.scene);
-
-                        render();
-                    });
+                //materials
+                const cubeMaterial3 = new THREE.MeshLambertMaterial({
+                    color: 0xff6600,
+                    envMap: reflectionCube,
+                    combine: THREE.MixOperation,
+                    reflectivity: 0.3,
                 });
+                const cubeMaterial2 = new THREE.MeshPhongMaterial({ color: 0xffee00, envMap: refractionCube, refractionRatio: 0.95 });
+                const cubeMaterial1 = new THREE.MeshPhongMaterial({ color: 0xffffff, envMap: reflectionCube });
+                // hdr
+                // const envTt = null;
+                var texLoader = new RGBELoader();
+                texLoader.load('models/qiu/qiu.hdr', function (texture, textureData) {
+                    var texture = texLoader.load('models/qiu/qiu.hdr');
+                    texture.encoding = THREE.RGBEEncoding; //设置编码属性的值
+                    texture.minFilter = THREE.NearestFilter; //当一个纹素覆盖小于一个像素时，贴图将如何采样
+                    texture.magFilter = THREE.NearestFilter; //当一个纹素覆盖大于一个像素时，贴图将如何采样
+                    texture.flipY = true; //翻转图像的Y轴以匹配WebGL纹理坐标空间
 
-                renderer = new THREE.WebGLRenderer({ antialias: true });
+                    // 加载.hdr贴图范围的纹理对象Texture作为.map的属性值
+                    // var material = new THREE.MeshBasicMaterial({
+                    //     map: texture,
+                    // });
+                    a(texture);
+                    console.log('111', texture, material);
+                    // // textureData.width / textureData.height表示图像宽高比
+                    // // 矩形几何体宽高比和图形的宽高比保持一致，避免图像显示伸缩
+                    // var geo = new THREE.PlaneBufferGeometry((textureData.width / textureData.height) * 100, 1 * 100);
+                    // var mesh = new THREE.Mesh(geo, material);
+                    // scene.add(mesh);
+                });
+                // let hdrCubeRenderTarget;
+                // const hdrUrls = ['qiu.hdr'];
+                // const hdrCubeMap = new HDRCubeTextureLoader().setPath('models/qiu/').load(hdrUrls, function () {
+                //     hdrCubeRenderTarget = pmremGenerator.fromCubemap(hdrCubeMap);
+
+                //     hdrCubeMap.magFilter = THREE.LinearFilter;
+                //     hdrCubeMap.needsUpdate = true;
+                // });
+                // console.log(hdrCubeMap, hdrCubeRenderTarget);
+                function a(material) {
+                    var mtlLoader = new MTLLoader();
+                    mtlLoader.setPath('models/qiu/');
+                    mtlLoader.load('untitled.mtl', function (materials) {
+                        materials.preload();
+                        var objLoader = new OBJLoader();
+                        // materials.envMap = material;
+                        objLoader.setMaterials(materials);
+                        objLoader.setPath('models/qiu/');
+                        objLoader.load(
+                            'untitled.obj',
+                            function (object) {
+                                const head = object.children[0];
+                                console.log(22, cubeMaterial1.envMap);
+                                object.scale.multiplyScalar(150);
+                                head.position.y = -500;
+                                // object.children[3].material.envMap = material;
+                                object.children[0].material.opacity = 1;
+                                object.children[0].material.envMap = cubeMaterial1.envMap;
+                                object.children[3].material.opacity = 0.6;
+                                object.children[3].material.envMap = cubeMaterial1.envMap;
+                                scene.add(object);
+                                window.scene = scene;
+                            }
+                            // onProgress,
+                            // onError
+                        );
+                    });
+                }
+                // a(envTt);
+                // //models
+                // const objLoader = new OBJLoader();
+
+                // objLoader.setPath('models/qiu/');
+                // objLoader.load('qiu.obj', function (object) {
+                //     const head = object.children[0];
+                //     console.log(object, head);
+                //     head.scale.multiplyScalar(150);
+                //     head.position.y = -500;
+                //     // head.material = cubeMaterial1;
+
+                //     // const head2 = head.clone();
+                //     // head2.position.x = -900;
+                //     // head2.material = cubeMaterial2;
+
+                //     // const head3 = head.clone();
+                //     // head3.position.x = 900;
+                //     // head3.material = cubeMaterial3;
+
+                //     scene.add(object);
+                //     window.scene = scene;
+                // });
+
+                //renderer
+                renderer = new THREE.WebGLRenderer();
                 renderer.setPixelRatio(window.devicePixelRatio);
                 renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.toneMapping = THREE.ACESFilmicToneMapping;
-                renderer.toneMappingExposure = 1;
-                renderer.outputEncoding = THREE.sRGBEncoding;
                 container.appendChild(renderer.domElement);
 
+                //controls
                 const controls = new OrbitControls(camera, renderer.domElement);
-                controls.addEventListener('change', render); // use if there is no animation loop
-                controls.minDistance = 2;
-                controls.maxDistance = 1000;
-                controls.target.set(0, 0, -0.2);
-                controls.update();
+                controls.enableZoom = false;
+                controls.enablePan = false;
+                controls.minPolarAngle = Math.PI / 4;
+                controls.maxPolarAngle = Math.PI / 1.5;
+
+                //stats
+                stats = new Stats();
+                container.appendChild(stats.dom);
 
                 window.addEventListener('resize', onWindowResize);
             }
@@ -89,14 +188,16 @@
                 camera.updateProjectionMatrix();
 
                 renderer.setSize(window.innerWidth, window.innerHeight);
+            }
 
+            function animate() {
+                requestAnimationFrame(animate);
                 render();
             }
 
-            //
-
             function render() {
                 renderer.render(scene, camera);
+                stats.update();
             }
         </script>
     </body>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>three.js webgl - buffergeometry - lines drawrange</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+        <link type="text/css" rel="stylesheet" href="main.css" />
+    </head>
+    <body>
+        <div id="container"></div>
+        <div id="info">
+            <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - buffergeometry drawrange<br />
+            by <a href="https://twitter.com/fernandojsg">fernandojsg</a>
+        </div>
+
+        <script type="module">
+            import * as THREE from '/build/three.module.js';
+
+            import Stats from '/js/jsm/libs/stats.module.js';
+            import { GUI } from '/js/jsm/libs/dat.gui.module.js';
+            import { RenderPass } from '/js/jsm/postprocessing/RenderPass.js';
+            import { OrbitControls } from '/js/jsm/controls/OrbitControls.js';
+            import { UnrealBloomPass } from '/js/jsm/postprocessing/UnrealBloomPass.js';
+            import { EffectComposer } from '/js/jsm/postprocessing/EffectComposer.js';
+
+            var scene, camera, controls, pointLight, stats;
+            var composer, renderer, mixer;
+
+            var clock = new THREE.Clock();
+            var container = document.getElementById('container');
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            //renderer.toneMapping = THREE.ReinhardToneMapping;
+            container.appendChild(renderer.domElement);
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 100);
+            camera.position.set(-5, 2.5, -3.5);
+            scene.add(camera);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+
+            var renderScene = new RenderPass(scene, camera);
+
+            var bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.threshold = 0;
+            bloomPass.strength = 1.5;
+            bloomPass.radius = 0;
+
+            composer = new EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+
+            let box = new THREE.CylinderGeometry(5, 5, 5);
+            let mail = new THREE.MeshBasicMaterial({
+                color: '#FF0000',
+            });
+            let mesh = new THREE.Mesh(box, mail);
+            scene.add(mesh);
+            window.composer = composer;
+            window.scene = scene;
+            animate();
+            function animate() {
+                requestAnimationFrame(animate);
+                composer.render();
+            }
+        </script>
+    </body>
+</html>
